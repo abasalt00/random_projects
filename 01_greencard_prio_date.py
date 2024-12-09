@@ -12,9 +12,9 @@ import streamlit as st
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}  /* Hides the hamburger menu */
-    footer {visibility: hidden;}    /* Hides the footer */
-    footer:after {content:'';}      /* Ensures no content appears */
-    div[role="button"] {visibility: hidden;} /* Hides 'Created by' button */
+    footer {visibility: hidden !important;}    /* Hides the footer */
+    footer:after {content:'' !important;}      /* Ensures no content appears */
+    div[role="button"] {visibility: hidden !important;} /* Hides 'Created by' button */
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
