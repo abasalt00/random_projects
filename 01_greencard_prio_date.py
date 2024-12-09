@@ -8,11 +8,12 @@ import streamlit as st
 
 import streamlit as st
 
-# Inject custom CSS to hide Streamlit branding and footer aggressively
+# Inject custom CSS to hide Streamlit branding and "Created by" attribution
 hide_streamlit_style = """
     <style>
     #MainMenu {visibility: hidden;}  /* Hides the hamburger menu */
-    footer, footer * {display: none !important;}  /* Completely hides the footer and its children */
+    footer {visibility: hidden !important;}    /* Hides the footer */
+    footer:after {content:'' !important;}      /* Ensures no content appears */
     div[role="button"] {visibility: hidden !important;} /* Hides 'Created by' button */
     </style>
 """
