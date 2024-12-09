@@ -8,13 +8,12 @@ from datetime import datetime
 # Function to scrape visa bulletin data from the PDF
 
 
-# Function to scrape visa bulletin data from the PDF
 @st.cache_data
-def scrape_visa_bulletin_pdf(month):
+def scrape_visa_bulletin_pdf(month, year):
     try:
-        # Dynamically construct the PDF URL based on the selected month
+        # Dynamically construct the PDF URL based on the selected month and year
         base_url = "https://travel.state.gov/content/dam/visas/Bulletins/visabulletin_"
-        pdf_url = f"{base_url}{month}2024.pdf"
+        pdf_url = f"{base_url}{month}{year}.pdf"
 
         # Download the PDF file
         response = requests.get(pdf_url)
@@ -100,35 +99,33 @@ def scrape_visa_bulletin_pdf(month):
 # Cache the plot data to avoid re-computation
 @st.cache_resource
 def get_plot_data():
-    if "plot_data" not in st.session_state:
-        plot_data = []
-        for i, month in enumerate(months):
-            data = scrape_visa_bulletin_pdf(month)
-            if data is not None and i + 1 < current_month:  # Passed month
-                plot_data.append((month, data))
-        st.session_state["plot_data"] = plot_data
-    return st.session_state["plot_data"]
+    plot_data = []
+    for year in [2024, 2025]:  # Check both years
+        for month in months:
+            data = scrape_visa_bulletin_pdf(month, year)
+            if data is not None:
+                plot_data.append((f"{month} {year}", data))
+    return plot_data
+
 
 # Function to generate the plot
-
-
 def generate_plot(plot_data):
     months_plot_eb2 = []
     dates_plot_eb2 = []
     months_plot_eb3 = []
     dates_plot_eb3 = []
 
-    for month, df in plot_data:
+    for month_year, df in plot_data:
         # Filter data for EB-2
         df_eb2 = df[df["Employment-based"] == "EB-2"]
         if not df_eb2.empty:
-            months_plot_eb2.append(month)
+            months_plot_eb2.append(month_year)
             dates_plot_eb2.append(df_eb2["Priority Date"].iloc[0])
 
         # Filter data for EB-3
         df_eb3 = df[df["Employment-based"] == "EB-3"]
         if not df_eb3.empty:
-            months_plot_eb3.append(month)
+            months_plot_eb3.append(month_year)
             dates_plot_eb3.append(df_eb3["Priority Date"].iloc[0])
 
     # Convert priority dates to datetime objects for plotting
@@ -150,14 +147,14 @@ def generate_plot(plot_data):
 
     plt.xlabel("Months")
     plt.ylabel("Priority Dates")
-    plt.title("Priority Dates for EB-2 and EB-3 in 2024 (Passed Months)")
+    plt.title("Priority Dates for EB-2 and EB-3")
     plt.xticks(rotation=45)
     plt.legend()
     return plt
 
 
 # Streamlit app
-st.title("Visa Bulletin Priority Dates for 2024")
+st.title("Visa Bulletin Priority Dates")
 
 # List of all months
 months = [
@@ -171,7 +168,6 @@ current_month = datetime.now().month
 # Generate plot data
 plot_data = get_plot_data()
 
-# Display plot for EB-2 and EB-3
 # Display plot for EB-2 and EB-3
 if plot_data:
     plot = generate_plot(plot_data)
@@ -191,14 +187,15 @@ if plot_data:
         "For any questions or feedback, contact me on Telegram: [@adi18bh](https://t.me/adi18bh)")
 
 
-# Sidebar for upcoming months
-st.sidebar.subheader("Upcoming Months")
-for i, month in enumerate(months):
-    if i + 1 >= current_month:
-        if st.sidebar.button(f"{month}"):
-            data = scrape_visa_bulletin_pdf(month)
-            if data is not None:
-                st.sidebar.success(f"{month} 2024")
-                st.sidebar.table(data)
-            else:
-                st.sidebar.error(f"No data available for {month}")
+# Sidebar for current month's data
+st.sidebar.subheader("Current Month Data")
+current_month_name = months[current_month - 1]
+current_year = datetime.now().year
+
+current_data = scrape_visa_bulletin_pdf(current_month_name, current_year)
+if current_data is not None:
+    st.sidebar.success(f"{current_month_name} {current_year}")
+    st.sidebar.table(current_data)
+else:
+    st.sidebar.error(
+        f"No data available for {current_month_name} {current_year}")
