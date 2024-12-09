@@ -76,18 +76,20 @@ def scrape_visa_bulletin_pdf(month):
 
 
 @st.cache_resource
+# Cache the plot data to avoid re-computation
 def get_plot_data():
-    plot_data = []
-    for i, month in enumerate(months):
-        data = scrape_visa_bulletin_pdf(month)
-        if data is not None and i + 1 < current_month:  # Passed month
-            plot_data.append((month, data))
-    return plot_data
+    if "plot_data" not in st.session_state:
+        plot_data = []
+        for i, month in enumerate(months):
+            data = scrape_visa_bulletin_pdf(month)
+            if data is not None and i + 1 < current_month:  # Passed month
+                plot_data.append((month, data))
+        st.session_state["plot_data"] = plot_data
+    return st.session_state["plot_data"]
 
 # Function to generate the plot
 
 
-@st.cache_resource
 def generate_plot(plot_data):
     months_plot_eb2 = []
     dates_plot_eb2 = []
