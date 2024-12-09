@@ -8,6 +8,7 @@ from datetime import datetime
 # Function to scrape visa bulletin data from the PDF
 
 
+# Function to scrape visa bulletin data from the PDF
 @st.cache_data
 def scrape_visa_bulletin_pdf(month):
     try:
@@ -38,46 +39,66 @@ def scrape_visa_bulletin_pdf(month):
 
         # Extract the section and the table
         section_start = text.find(section_title)
-        # Assuming table starts with "1st"
         table_start = text.find("1st", section_start)
         if table_start == -1:
             return None
 
         # Extract the relevant portion of the text
-        # Extract a chunk for the table
-        table_text = text[table_start:table_start + 1000]
+        table_text = text[table_start:]
 
         # Parse the table manually
         lines = table_text.split("\n")
         data = []
+        current_row = []
+
         for line in lines:
-            columns = line.split()
-            if len(columns) > 1:
-                data.append(columns)
+            # Check if the line starts with a valid employment-based category
+            if line.split()[0] in ["1st", "2nd", "3rd", "4th", "5th", "Certain", "Other"]:
+                if current_row:
+                    data.append(current_row)
+                current_row = [line]
+            else:
+                current_row.append(line)
+
+        # Add the last row to the data
+        if current_row:
+            data.append(current_row)
+
+        # Flatten rows and split columns based on spaces
+        flattened_data = []
+        for row in data:
+            combined_row = " ".join(row)
+            columns = combined_row.split()
+            flattened_data.append(columns)
 
         # Convert the parsed data into a pandas DataFrame
-        df = pd.DataFrame(data)
+        df = pd.DataFrame(flattened_data)
+        df = df.iloc[:, :2]  # Select only the first two columns
+        df.columns = ["Employment-based", "Priority Date"]
 
-        # Select only the desired columns (0 and 1) and rename them
-        df = df.iloc[:, [0, 1]]  # Select column 0 and 1
-        df.columns = ["Employment-based", "Priority Date"]  # Rename columns
-
-        # Replace "1st", "2nd", "3rd", "4th", "5th" with "EB-1", "EB-2", "EB-3", "EB-4", "EB-5"
+        # Replace "1st", "2nd", etc., with "EB-1", "EB-2", etc.
         df["Employment-based"] = df["Employment-based"].replace(
-            {"1st": "EB-1", "2nd": "EB-2", "3rd": "EB-3",
-                "4th": "EB-4", "5th": "EB-5"}
+            {
+                "1st": "EB-1", "2nd": "EB-2", "3rd": "EB-3",
+                "4th": "EB-4", "5th": "EB-5", "Certain": "Certain Religious Workers",
+                "Other": "Other Workers",
+            }
         )
 
+        # Filter for only EB-1, EB-2, EB-3, and EB-4
+        df = df[df["Employment-based"].isin(["EB-1", "EB-2", "EB-3", "EB-4"])]
+
+        # Filter out invalid priority dates
+        df = df[~df["Priority Date"].isin(["Set", "Unreserved"])]
         return df
+
     except Exception as e:
+        st.error(f"An error occurred: {e}")
         return None
 
+
 # Cache the plot data to avoid re-computation
-
-
 @st.cache_resource
-# Cache the plot data to avoid re-computation
-# Cache the plot data to avoid re-computation
 def get_plot_data():
     if "plot_data" not in st.session_state:
         plot_data = []
@@ -152,11 +173,9 @@ plot_data = get_plot_data()
 
 # Display plot for EB-2 and EB-3
 if plot_data:
-    # st.subheader("Priority Dates for EB-2 and EB-3 in Passed Months")
     plot = generate_plot(plot_data)
     st.pyplot(plot)
 
-# Sidebar for upcoming months
 # Sidebar for upcoming months
 st.sidebar.subheader("Upcoming Months")
 for i, month in enumerate(months):
