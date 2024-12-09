@@ -77,6 +77,7 @@ def scrape_visa_bulletin_pdf(month):
 
 @st.cache_resource
 # Cache the plot data to avoid re-computation
+# Cache the plot data to avoid re-computation
 def get_plot_data():
     if "plot_data" not in st.session_state:
         plot_data = []
@@ -151,18 +152,19 @@ plot_data = get_plot_data()
 
 # Display plot for EB-2 and EB-3
 if plot_data:
-    st.subheader("Priority Dates for EB-2 and EB-3 in Passed Months")
+    # st.subheader("Priority Dates for EB-2 and EB-3 in Passed Months")
     plot = generate_plot(plot_data)
     st.pyplot(plot)
 
-# Create buttons for upcoming months
-st.subheader("Upcoming Months")
+# Sidebar for upcoming months
+# Sidebar for upcoming months
+st.sidebar.subheader("Upcoming Months")
 for i, month in enumerate(months):
     if i + 1 >= current_month:
-        if st.button(f"Show Priority Date for {month}"):
+        if st.sidebar.button(f"{month}"):
             data = scrape_visa_bulletin_pdf(month)
             if data is not None:
-                st.success(f"Priority Dates for {month} 2024")
-                st.table(data)
+                st.sidebar.success(f"{month} 2024")
+                st.sidebar.table(data)
             else:
-                st.error(f"No data available for {month}")
+                st.sidebar.error(f"No data available for {month}")
