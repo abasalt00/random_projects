@@ -172,9 +172,24 @@ current_month = datetime.now().month
 plot_data = get_plot_data()
 
 # Display plot for EB-2 and EB-3
+# Display plot for EB-2 and EB-3
 if plot_data:
     plot = generate_plot(plot_data)
     st.pyplot(plot)
+
+    # Add a disclaimer under the plot
+    st.write(
+        """
+        **Note:** This app is not responsible for any likely mistakes which might happen,
+        so please double-check the priority dates at:
+        [Visa Bulletin](https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin/2025/visa-bulletin-for-december-2024.html) to make sure.
+        """
+    )
+
+    # Add contact information
+    st.write(
+        "For any questions or feedback, contact me on Telegram: [@adi18bh](https://t.me/adi18bh)")
+
 
 # Sidebar for upcoming months
 st.sidebar.subheader("Upcoming Months")
