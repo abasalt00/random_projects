@@ -4,6 +4,16 @@ import pdfplumber
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+import streamlit as st
+
+hide_streamlit_style = """
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 
 # Function to scrape visa bulletin data from the PDF
 
