@@ -147,7 +147,7 @@ def generate_plot(plot_data):
 
     plt.xlabel("Months")
     plt.ylabel("Priority Dates")
-    plt.title("Priority Dates for EB-2 and EB-3")
+    plt.title("Priority date for filing 485 in EB-2 and EB-3 categories")
     plt.xticks(rotation=45)
     plt.legend()
     return plt
