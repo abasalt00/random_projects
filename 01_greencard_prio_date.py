@@ -6,10 +6,15 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import streamlit as st
 
+import streamlit as st
+
+# Inject custom CSS to hide Streamlit branding and "Created by" attribution
 hide_streamlit_style = """
     <style>
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
+    #MainMenu {visibility: hidden;}  /* Hides the hamburger menu */
+    footer {visibility: hidden;}    /* Hides the footer */
+    footer:after {content:'';}      /* Ensures no content appears */
+    div[role="button"] {visibility: hidden;} /* Hides 'Created by' button */
     </style>
 """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
